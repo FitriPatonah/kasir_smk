@@ -43,6 +43,12 @@ class AuthController extends Controller
             ]);
         }
 
+        if (! $user->aktif) {
+            throw ValidationException::withMessages([
+                'username' => ['Akun ini sudah dinonaktifkan. Hubungi admin untuk mengaktifkan kembali.'],
+            ]);
+        }
+
         $userRole = in_array($user->role, ['admin', 'kasir'], true) ? $user->role : 'kasir';
 
         if ($selectedRole && $selectedRole !== $userRole) {

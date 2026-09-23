@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -53,7 +54,15 @@ body{
     align-items:center;
 }
 
-.brand-mark{width:36px;height:36px;display:grid;place-items:center;border-radius:8px;background:rgba(255,255,255,.18);font-size:22px;}
+.brand-mark{
+    width:36px;
+    height:36px;
+    display:grid;
+    place-items:center;
+    border-radius:8px;
+    background:rgba(255,255,255,.18);
+    font-size:22px;
+}
 
 .brand strong{
     display:block;
@@ -93,7 +102,13 @@ body{
     width:18px;
     text-align:center;
     font-size:19px;
-}.nav-icon svg{width:18px;height:18px;display:block}
+}
+
+.nav-icon svg{
+    width:18px;
+    height:18px;
+    display:block;
+}
 
 .nav-arrow{
     margin-left:auto;
@@ -269,55 +284,153 @@ body{
     margin:0 0 28px;
 }
 
+
+/* =========================================================
+   GRAFIK PENJUALAN
+   ========================================================= */
+
 .chart{
     height:234px;
     display:flex;
     align-items:stretch;
     gap:14px;
     position:relative;
-    padding:0 4px 27px 34px;
+    padding:0 4px 27px 72px;
 }
 
-.chart:before{
+
+/* Area garis grafik */
+.chart::before{
     content:"";
     position:absolute;
-    inset:0 0 27px 34px;
-    background:repeating-linear-gradient(
-        to bottom,
-        transparent 0,
-        transparent 59px,
-        #e3eaf3 60px
-    );
-    border-left:1px solid #8f9baa;
-    border-bottom:1px solid #8f9baa;
+
+    top:0;
+    right:4px;
+    bottom:27px;
+    left:72px;
+
+    /*
+       Garis 100%, 75%, 50%, 25%
+       berwarna hitam dan putus-putus.
+    */
+    background:
+        repeating-linear-gradient(
+            to right,
+            #000 0,
+            #000 5px,
+            transparent 5px,
+            transparent 10px
+        )
+        0 0 / 100% 1px no-repeat,
+
+        repeating-linear-gradient(
+            to right,
+            #000 0,
+            #000 5px,
+            transparent 5px,
+            transparent 10px
+        )
+        0 25% / 100% 1px no-repeat,
+
+        repeating-linear-gradient(
+            to right,
+            #000 0,
+            #000 5px,
+            transparent 5px,
+            transparent 10px
+        )
+        0 50% / 100% 1px no-repeat,
+
+        repeating-linear-gradient(
+            to right,
+            #000 0,
+            #000 5px,
+            transparent 5px,
+            transparent 10px
+        )
+        0 75% / 100% 1px no-repeat;
+
+    /*
+       Garis vertikal kiri grafik.
+    */
+    border-left:1px solid #000;
+
+    pointer-events:none;
 }
+
+
+/*
+   Garis 0 dibuat terpisah agar SOLID.
+*/
+.chart::after{
+    content:"";
+    position:absolute;
+
+    left:72px;
+    right:4px;
+    bottom:27px;
+
+    height:1px;
+    background:#000;
+
+    pointer-events:none;
+}
+
+
+/* Label nilai Y */
 
 .y-labels{
     position:absolute;
+
     left:0;
     top:-5px;
     bottom:27px;
+
+    width:64px;
+
+    text-align:right;
+    padding-right:8px;
+
+    box-sizing:border-box;
+
     display:flex;
     flex-direction:column;
     justify-content:space-between;
-    color:#7e8997;
+
+    color:#000;
     font-size:11px;
+
+    z-index:2;
 }
+
+
+/* Batang grafik */
 
 .bar-item{
     flex:1;
+
     display:flex;
     flex-direction:column;
     justify-content:flex-end;
     align-items:center;
-    z-index:1;
+
+    z-index:3;
 }
 
 .bar{
     width:min(58px,70%);
-    background:#2b65e9;
+
+    background:var(--bar-color,#1e3a5f);
+
     border-radius:4px 4px 0 0;
+
     min-height:3px;
+
+    transition:opacity .2s ease;
+}
+
+.bar:hover{
+    opacity:.8;
 }
 
 .bar-label{
@@ -329,8 +442,13 @@ body{
 .chart-note{
     font-size:12px;
     color:var(--muted);
-    margin:10px 0 0 34px;
+    margin:10px 0 0 72px;
 }
+
+
+/* =========================================================
+   DONUT
+   ========================================================= */
 
 .donut-wrap{
     display:flex;
@@ -343,22 +461,30 @@ body{
 .donut{
     width:158px;
     height:158px;
+
     border-radius:50%;
+
     background:conic-gradient(
         #2865e9 0 71%,
         #18bd5b 71% 86%,
         #ff6b19 86% 100%
     );
+
     position:relative;
 }
 
 .donut:after{
     content:"";
+
     position:absolute;
+
     background:#fff;
+
     width:91px;
     height:91px;
+
     border-radius:50%;
+
     inset:33.5px;
 }
 
@@ -380,6 +506,11 @@ body{
     color:var(--ink);
     font-weight:600;
 }
+
+
+/* =========================================================
+   PRODUK TERLARIS
+   ========================================================= */
 
 .product-panel{
     padding:25px;
@@ -533,6 +664,11 @@ td strong{
     display:inline;
 }
 
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
 @media(max-width:1050px){
 
     .stats{
@@ -547,6 +683,7 @@ td strong{
         grid-template-columns:repeat(2,1fr);
     }
 }
+
 
 @media(max-width:680px){
 
@@ -619,9 +756,12 @@ td strong{
 }
 </style>
 
+
 <script>
 function toggleEdit(id){
-    const element = document.getElementById('edit-' + id);
+
+    const element =
+        document.getElementById('edit-' + id);
 
     if(element){
         element.classList.toggle('show');
@@ -631,39 +771,35 @@ function toggleEdit(id){
 
 </head>
 
+
 <body>
 
 <div class="layout">
 
+
     <!-- SIDEBAR -->
-    <aside class="sidebar">
-        <div class="brand"><span class="brand-mark">🛒</span><div><strong>{{ $namaToko }}</strong><small>Admin Utama</small></div></div>
-        <nav class="nav">
-            <a class="active" href="{{ route('admin.dashboard') }}"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg></span><span>Dashboard</span></a>
-            <a href="{{ route('admin.produk') }}"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5"/><path d="M12 13v8"/></svg></span><span>Produk</span></a>
-            <a href="{{ route('admin.kategori') }}"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41L11 3.83A2 2 0 0 0 9.5 3H4a1 1 0 0 0-1 1v5.5a2 2 0 0 0 .59 1.41l9.58 9.59a2 2 0 0 0 2.82 0l4.6-4.6a2 2 0 0 0 0-2.99z"/><circle cx="7.5" cy="7.5" r="1.2"/></svg></span><span>Kategori</span></a>
-            <a href="{{ route('admin.supplier') }}"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 3v5h-7z"/><circle cx="5.5" cy="18.5" r="2"/><circle cx="18" cy="18.5" r="2"/></svg></span><span>Supplier</span></a>
-            <a href="{{ route('admin.stok') }}"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="5" rx="1"/><path d="M4 9v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9"/><path d="M10 13h4"/></svg></span><span>Stok</span></a>
-            <a href="{{ route('admin.laporan') }}"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l3 3v17H6z"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></span><span>Transaksi</span></a>
-            <a href="{{ route('admin.riwayat.transaksi') }}"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg></span><span>Laporan</span></a>
-            <a href="{{ route('admin.pengaturan') }}"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span><span>Pengaturan</span></a>
-        </nav>
-        <div class="sidebar-spacer"></div>
-        <div class="logout"><a href="{{ route('auth.logout', ['role' => 'admin']) }}"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg></span><span>Keluar</span></a></div>
-    </aside>
+
+    @include('admin.partials.sidebar', [
+        'active' => 'dashboard'
+    ])
 
 
     <!-- MAIN CONTENT -->
+
     <main class="main">
 
+
         <!-- HEADER -->
+
         <header class="heading">
 
             <div>
 
                 <h1>Dashboard</h1>
 
-                <p>Selamat datang, Admin Utama</p>
+                <p>
+                    Selamat datang, Admin Utama
+                </p>
 
             </div>
 
@@ -675,6 +811,7 @@ function toggleEdit(id){
 
 
         <!-- ALERT SUCCESS -->
+
         @if(session('success'))
 
             <div class="alert success">
@@ -685,6 +822,7 @@ function toggleEdit(id){
 
 
         <!-- ALERT ERROR -->
+
         @if(session('error'))
 
             <div class="alert error">
@@ -695,11 +833,14 @@ function toggleEdit(id){
 
 
         <!-- VALIDATION ERROR -->
+
         @if($errors->any())
 
             <div class="alert error">
 
-                <strong>Data belum disimpan:</strong>
+                <strong>
+                    Data belum disimpan:
+                </strong>
 
                 {{ $errors->first() }}
 
@@ -709,67 +850,190 @@ function toggleEdit(id){
 
 
         <!-- STATISTIK -->
+
         <section class="stats">
 
+
             <!-- Pendapatan Hari Ini -->
+
             <div class="stat">
 
-                <small>Pendapatan Hari Ini</small>
+                <small>
+                    Pendapatan Hari Ini
+                </small>
 
                 <strong>
-                    Rp {{ number_format($omzetHariIni,0,',','.') }}
+                    Rp {{ number_format(
+                        $omzetHariIni,
+                        0,
+                        ',',
+                        '.'
+                    ) }}
                 </strong>
 
                 <span class="stat-icon icon-blue">
-                    $
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        width="24"
+                        height="24"
+                    >
+
+                        <line
+                            x1="12"
+                            y1="1"
+                            x2="12"
+                            y2="23"
+                        />
+
+                        <path
+                            d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"
+                        />
+
+                    </svg>
+
                 </span>
 
             </div>
 
 
             <!-- Transaksi Hari Ini -->
+
             <div class="stat">
 
-                <small>Transaksi Hari Ini</small>
+                <small>
+                    Transaksi Hari Ini
+                </small>
 
                 <strong>
-                    {{ number_format($transaksiHariIni,0,',','.') }}
+                    {{ number_format(
+                        $transaksiHariIni,
+                        0,
+                        ',',
+                        '.'
+                    ) }}
                 </strong>
 
                 <span class="stat-icon icon-orange">
-                    ⌑
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        width="24"
+                        height="24"
+                    >
+
+                        <path d="M6 2h9l3 3v17H6z"/>
+
+                        <path
+                            d="M9 8h6M9 12h6M9 16h4"
+                        />
+
+                    </svg>
+
                 </span>
 
             </div>
 
 
             <!-- Total Produk -->
+
             <div class="stat">
 
-                <small>Total Produk</small>
+                <small>
+                    Total Produk
+                </small>
 
                 <strong>
-                    {{ number_format($jumlahProduk,0,',','.') }}
+                    {{ number_format(
+                        $jumlahProduk,
+                        0,
+                        ',',
+                        '.'
+                    ) }}
                 </strong>
 
                 <span class="stat-icon icon-green">
-                    ◇
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        width="24"
+                        height="24"
+                    >
+
+                        <path
+                            d="M21 8l-9-5-9 5v8l9 5 9-5V8z"
+                        />
+
+                        <path
+                            d="M3 8l9 5 9-5"
+                        />
+
+                        <path
+                            d="M12 13v8"
+                        />
+
+                    </svg>
+
                 </span>
 
             </div>
 
 
             <!-- Total Pendapatan -->
+
             <div class="stat">
 
-                <small>Total Pendapatan</small>
+                <small>
+                    Total Pendapatan
+                </small>
 
                 <strong>
-                    Rp {{ number_format($totalPendapatan,0,',','.') }}
+                    Rp {{ number_format(
+                        $totalPendapatan,
+                        0,
+                        ',',
+                        '.'
+                    ) }}
                 </strong>
 
                 <span class="stat-icon icon-purple">
-                    ↗
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        width="24"
+                        height="24"
+                    >
+
+                        <path
+                            d="M22 7l-8.5 8.5-5-5L2 17"
+                        />
+
+                        <path
+                            d="M16 7h6v6"
+                        />
+
+                    </svg>
+
                 </span>
 
             </div>
@@ -778,33 +1042,60 @@ function toggleEdit(id){
 
 
         <!-- GRAFIK + PRODUK TERLARIS -->
+
         <section class="content-grid">
 
+
             <!-- Grafik Penjualan -->
+
             <div class="panel">
 
                 <h2>
                     Penjualan 7 Hari Terakhir
                 </h2>
 
+
                 <div class="chart">
+
+
+                    <!-- LABEL Y -->
 
                     <div class="y-labels">
 
                         <span>
-                            Rp{{ number_format($maxPenjualan,0,',','.') }}
+                            Rp{{ number_format(
+                                $maxPenjualan,
+                                0,
+                                ',',
+                                '.'
+                            ) }}
                         </span>
 
                         <span>
-                            Rp{{ number_format($maxPenjualan*0.75,0,',','.') }}
+                            Rp{{ number_format(
+                                $maxPenjualan * 0.75,
+                                0,
+                                ',',
+                                '.'
+                            ) }}
                         </span>
 
                         <span>
-                            Rp{{ number_format($maxPenjualan*0.5,0,',','.') }}
+                            Rp{{ number_format(
+                                $maxPenjualan * 0.5,
+                                0,
+                                ',',
+                                '.'
+                            ) }}
                         </span>
 
                         <span>
-                            Rp{{ number_format($maxPenjualan*0.25,0,',','.') }}
+                            Rp{{ number_format(
+                                $maxPenjualan * 0.25,
+                                0,
+                                ',',
+                                '.'
+                            ) }}
                         </span>
 
                         <span>
@@ -814,18 +1105,63 @@ function toggleEdit(id){
                     </div>
 
 
+                    <!-- WARNA GRAFIK -->
+
+                    @php
+
+                        $warnaGrafik = [
+
+                            '#2563eb',
+                            '#16a34a',
+                            '#f59e0b',
+                            '#9333ea',
+                            '#dc2626',
+                            '#0891b2',
+                            '#e11d48',
+
+                        ];
+
+                    @endphp
+
+
+                    <!-- DATA GRAFIK -->
+
                     @foreach($penjualan7Hari as $i => $nilai)
 
                         <div class="bar-item">
 
                             <div
                                 class="bar"
-                                style="height:{{ max(($nilai / $maxPenjualan) * 200, 3) }}px"
-                                title="Rp {{ number_format($nilai,0,',','.') }}"
+                                style="
+                                    height:
+                                    {{ max(
+                                        ($nilai / $maxPenjualan) * 200,
+                                        3
+                                    ) }}px;
+
+                                    --bar-color:
+                                    {{ $warnaGrafik[
+                                        $i % count($warnaGrafik)
+                                    ] }};
+                                "
+
+                                title="
+                                    Rp {{
+                                        number_format(
+                                            $nilai,
+                                            0,
+                                            ',',
+                                            '.'
+                                        )
+                                    }}
+                                "
                             ></div>
 
+
                             <span class="bar-label">
+
                                 {{ $labelHari[$i] }}
+
                             </span>
 
                         </div>
@@ -833,6 +1169,7 @@ function toggleEdit(id){
                     @endforeach
 
                 </div>
+
 
                 <p class="chart-note">
                     Data asli dari transaksi 7 hari terakhir
@@ -842,6 +1179,7 @@ function toggleEdit(id){
 
 
             <!-- PRODUK TERLARIS -->
+
             <div class="panel">
 
                 <h2>
@@ -851,7 +1189,9 @@ function toggleEdit(id){
 
                 @forelse($produkTerlaris as $item)
 
-                    <div style="margin-bottom:14px;">
+                    <div
+                        style="margin-bottom:14px;"
+                    >
 
                         <div
                             style="
@@ -884,9 +1224,13 @@ function toggleEdit(id){
 
                             <div
                                 style="
-                                    background:#2b65e9;
+                                    background:#1e3a5f;
                                     height:100%;
-                                    width:{{ ($item->total_qty / $maxTerlaris) * 100 }}%;
+                                    width:
+                                    {{
+                                        ($item->total_qty /
+                                        $maxTerlaris) * 100
+                                    }}%;
                                 "
                             ></div>
 
@@ -896,7 +1240,12 @@ function toggleEdit(id){
 
                 @empty
 
-                    <p style="color:#999;font-size:13px;">
+                    <p
+                        style="
+                            color:#999;
+                            font-size:13px;
+                        "
+                    >
                         Belum ada transaksi bulan ini.
                     </p>
 
@@ -912,3 +1261,4 @@ function toggleEdit(id){
 
 </body>
 </html>
+```

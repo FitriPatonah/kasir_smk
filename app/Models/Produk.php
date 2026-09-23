@@ -14,7 +14,14 @@ class Produk extends Model
         'kategori',
         'harga',
         'stok',
+        'pajak',
         'foto',
+    ];
+
+    protected $casts = [
+        'harga' => 'integer',
+        'stok' => 'integer',
+        'pajak' => 'integer',
     ];
 
     public function transaksiDetail()

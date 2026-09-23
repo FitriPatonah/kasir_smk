@@ -19,6 +19,14 @@ class StokController extends Controller
 
         $produk = Produk::orderBy('nama_produk')->get();
 
+        // Kasir punya sidebar & gaya halaman sendiri (css/kasir.css), jadi
+        // dipisah ke view khusus supaya tampilannya konsisten dengan
+        // halaman Kasir/Riwayat/Profil lainnya. Admin TETAP pakai stok.index
+        // seperti semula, tidak diubah sama sekali.
+        if ($role === 'kasir') {
+            return view('kasir.stok', compact('produk'));
+        }
+
         return view('stok.index', compact('produk', 'role'));
     }
 

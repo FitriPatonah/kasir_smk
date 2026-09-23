@@ -9,9 +9,11 @@ use App\Models\Produk;
 use App\Models\Supplier;
 use App\Models\Transaksi;
 use App\Models\TransaksiDetail;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
@@ -217,10 +219,13 @@ class AdminController extends Controller
             'kategori' => ['required', 'exists:kategori,nama'],
             'harga' => ['required', 'integer', 'min:0'],
             'stok' => ['required', 'integer', 'min:0'],
+            'pajak' => ['nullable', 'integer', 'min:0', 'max:100'],
             'foto' => ['nullable', 'image', 'max:2048'],
         ], [
             'barcode.unique' => 'Barcode tersebut sudah digunakan oleh produk lain.',
         ]);
+
+        $data['pajak'] = (int) ($data['pajak'] ?? 0);
 
         if ($request->hasFile('foto')) {
             $data['foto'] = $request->file('foto')->store('produk', 'public');
@@ -247,10 +252,13 @@ class AdminController extends Controller
             'kategori' => ['required', 'exists:kategori,nama'],
             'harga' => ['required', 'integer', 'min:0'],
             'stok' => ['required', 'integer', 'min:0'],
+            'pajak' => ['nullable', 'integer', 'min:0', 'max:100'],
             'foto' => ['nullable', 'image', 'max:2048'],
         ], [
             'barcode.unique' => 'Barcode tersebut sudah digunakan oleh produk lain.',
         ]);
+
+        $data['pajak'] = (int) ($data['pajak'] ?? 0);
 
         if ($request->hasFile('foto')) {
             if ($produk->foto) {
@@ -287,11 +295,16 @@ class AdminController extends Controller
     }
 
     /**
-     * Riwayat transaksi khusus halaman admin.
+     * Laporan (riwayat transaksi) khusus halaman admin.
      */
-    public function riwayatTransaksi()
+    public function laporan(Request $request)
     {
-        $transaksi = Transaksi::with('detail')
+        // Tab mana yang sedang aktif -- ditentukan di server, supaya
+        // begitu halaman dimuat langsung benar, tidak "kedip" ke tab
+        // Transaksi dulu sebelum dibetulkan JavaScript.
+        $tabAktif = $request->query('tab') === 'kasir' ? 'kasir' : 'transaksi';
+
+        $transaksi = Transaksi::with(['detail', 'kasir'])
             ->orderByDesc('created_at')
             ->get()
             ->map(function ($item) {
@@ -301,7 +314,36 @@ class AdminController extends Controller
                 return $item;
             });
 
-        return view('admin.riwayat', compact('transaksi'));
+        // Filter tanggal KHUSUS untuk rekap kasir -- supaya bisa
+        // bandingkan performa per periode (mis. bulan ini, minggu lalu),
+        // bukan cuma total sepanjang masa yang kurang adil buat kasir
+        // yang baru mulai kerja belakangan.
+        $dariKasir = $request->query('dari_kasir');
+        $sampaiKasir = $request->query('sampai_kasir');
+
+        // Rekap per kasir: jumlah transaksi & total penjualan tiap kasir.
+        // Sengaja HANYA transaksi asli (bukan data simulasi buat latihan
+        // model prediksi stok) -- laporan performa kasir harus murni dari
+        // penjualan sungguhan.
+        $rekapKasir = Transaksi::with('kasir')
+            ->where('sumber_data', 'asli')
+            ->when($dariKasir, fn ($q) => $q->whereDate('created_at', '>=', $dariKasir))
+            ->when($sampaiKasir, fn ($q) => $q->whereDate('created_at', '<=', $sampaiKasir))
+            ->get()
+            ->groupBy('kasir_id')
+            ->map(function ($grup) {
+                $kasir = $grup->first()->kasir;
+                return (object) [
+                    'nama' => $kasir?->name ?? 'Tanpa Kasir (Data Lama)',
+                    'username' => $kasir?->username,
+                    'jumlah_transaksi' => $grup->count(),
+                    'total_penjualan' => $grup->sum('total'),
+                ];
+            })
+            ->sortByDesc('total_penjualan')
+            ->values();
+
+        return view('admin.laporan', compact('transaksi', 'rekapKasir', 'dariKasir', 'sampaiKasir', 'tabAktif'));
     }
 
     /**
@@ -309,7 +351,7 @@ class AdminController extends Controller
      */
     public function detailTransaksi($id)
     {
-        $transaksi = Transaksi::with('detail.produk')->findOrFail($id);
+        $transaksi = Transaksi::with(['detail.produk', 'kasir'])->findOrFail($id);
 
         return view('admin.transaksi-detail', compact('transaksi'));
     }
@@ -333,7 +375,6 @@ class AdminController extends Controller
             'nama_toko' => ['required', 'string', 'max:150'],
             'telepon' => ['nullable', 'string', 'max:30'],
             'alamat' => ['nullable', 'string'],
-            'persentase_pajak' => ['required', 'integer', 'min:0', 'max:100'],
             'info_rekening' => ['nullable', 'string', 'max:150'],
             'header_struk' => ['nullable', 'string'],
             'footer_struk' => ['nullable', 'string'],
@@ -349,6 +390,155 @@ class AdminController extends Controller
         $pengaturan->update($data);
 
         return redirect()->route('admin.pengaturan')->with('success', 'Pengaturan berhasil disimpan.');
+    }
+
+    /**
+     * Tampilkan halaman Kelola User (admin & kasir).
+     */
+    public function kelolaUser()
+    {
+        // Admin selalu tampil paling atas, baru diikuti kasir.
+        // Di dalam masing-masing grup, yang paling baru bergabung ditaruh duluan.
+        $user = User::orderByRaw("CASE WHEN role = 'admin' THEN 0 ELSE 1 END")
+            ->orderByDesc('created_at')
+            ->get();
+
+        return view('admin.kelola-user', compact('user'));
+    }
+
+    /**
+     * Simpan user baru (admin atau kasir).
+     */
+    public function storeUser(Request $request)
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:120'],
+            'username' => ['required', 'string', 'max:50', 'alpha_dash', 'unique:users,username'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'role' => ['required', 'in:admin,kasir'],
+            'password' => ['required', 'string', 'min:6'],
+        ]);
+
+        User::create([
+            'name' => $data['name'],
+            'username' => $data['username'],
+            'email' => $data['email'],
+            'role' => $data['role'],
+            'password' => Hash::make($data['password']),
+            'aktif' => true,
+        ]);
+
+        return redirect()->route('admin.kelola-user')->with('success', 'User berhasil ditambahkan.');
+    }
+
+    /**
+     * Perbarui data user. Password hanya diganti jika diisi.
+     */
+    public function updateUser(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:120'],
+            'username' => ['required', 'string', 'max:50', 'alpha_dash', Rule::unique('users', 'username')->ignore($user->id)],
+            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
+            'role' => ['required', 'in:admin,kasir'],
+            'password' => ['nullable', 'string', 'min:6'],
+        ]);
+
+        if (empty($data['password'])) {
+            unset($data['password']);
+        } else {
+            $data['password'] = Hash::make($data['password']);
+        }
+
+        // Admin tidak boleh mengubah role akunnya sendiri (mencegah admin
+        // tanpa sengaja menurunkan hak aksesnya sendiri jadi kasir).
+        if ($user->id === Auth::guard('admin')->id() && $data['role'] !== 'admin') {
+            return redirect()->route('admin.kelola-user')
+                ->with('error', 'Anda tidak dapat mengubah role akun Anda sendiri.');
+        }
+
+        // Catat email TUJUAN notifikasi & daftar field yang berubah SEBELUM
+        // data ditimpa -- supaya kalau emailnya sendiri yang diganti,
+        // notifikasi tetap terkirim ke alamat LAMA (pemilik akun yang asli),
+        // bukan ke alamat baru yang mungkin dimasukkan orang lain.
+        $emailTujuanNotifikasi = $user->email;
+        $labelField = [
+            'name' => 'Nama',
+            'username' => 'Username',
+            'email' => 'Email',
+            'role' => 'Role',
+            'password' => 'Password',
+        ];
+        $perubahan = [];
+        foreach ($data as $field => $nilaiBaru) {
+            if ($field === 'password') {
+                $perubahan[] = $labelField[$field];
+                continue;
+            }
+            if ((string) $user->{$field} !== (string) $nilaiBaru) {
+                $perubahan[] = $labelField[$field] ?? $field;
+            }
+        }
+
+        $user->update($data);
+
+        if (!empty($perubahan) && $emailTujuanNotifikasi) {
+            try {
+                \Illuminate\Support\Facades\Mail::to($emailTujuanNotifikasi)
+                    ->send(new \App\Mail\UserDiubahMail($user, $perubahan));
+            } catch (\Throwable $e) {
+                // Gagal kirim email TIDAK boleh menggagalkan penyimpanan
+                // data user -- cukup dicatat ke log supaya admin bisa cek.
+                \Illuminate\Support\Facades\Log::warning(
+                    'Gagal mengirim notifikasi email perubahan user: ' . $e->getMessage()
+                );
+            }
+        }
+
+        return redirect()->route('admin.kelola-user')->with('success', 'Data user berhasil diperbarui.');
+    }
+
+    /**
+     * Aktifkan / nonaktifkan user (mencegah user login sementara tanpa dihapus).
+     */
+    public function toggleStatusUser($id)
+    {
+        $user = User::findOrFail($id);
+
+        if ($user->id === Auth::guard('admin')->id()) {
+            return redirect()->route('admin.kelola-user')
+                ->with('error', 'Anda tidak dapat menonaktifkan akun Anda sendiri.');
+        }
+
+        $user->update(['aktif' => ! $user->aktif]);
+
+        return redirect()->route('admin.kelola-user')
+            ->with('success', $user->aktif ? 'User berhasil diaktifkan.' : 'User berhasil dinonaktifkan.');
+    }
+
+    /**
+     * Hapus user. Admin tidak dapat menghapus akunnya sendiri atau
+     * menghapus admin terakhir yang tersisa di sistem.
+     */
+    public function destroyUser($id)
+    {
+        $user = User::findOrFail($id);
+
+        if ($user->id === Auth::guard('admin')->id()) {
+            return redirect()->route('admin.kelola-user')
+                ->with('error', 'Anda tidak dapat menghapus akun Anda sendiri.');
+        }
+
+        if ($user->role === 'admin' && User::where('role', 'admin')->count() <= 1) {
+            return redirect()->route('admin.kelola-user')
+                ->with('error', 'Tidak dapat menghapus admin terakhir.');
+        }
+
+        $user->delete();
+
+        return redirect()->route('admin.kelola-user')->with('success', 'User berhasil dihapus.');
     }
 
     public function logout()

@@ -13,22 +13,34 @@
     .empty { color: #999; text-align: center; padding: 40px 0; }
     .badge { display: inline-block; background: #e8f5e9; color: #2e7d32; padding: 5px 10px; border-radius: 99px; font-size: 12px; font-weight: 600; }
     .money { font-weight: 700; white-space: nowrap; }
+
+    .riwayat-heading { display: flex; justify-content: space-between; align-items: flex-start; margin: 0 0 18px; flex-wrap: wrap; gap: 10px; }
+    .riwayat-heading h1 { font-size: 22px; margin: 0 0 4px; color: #1e3a5f; }
+    .riwayat-heading p { margin: 0; color: #708099; font-size: 14px; }
+    .riwayat-heading .tanggal { color: #708099; font-size: 13px; padding-top: 6px; }
 </style>
 </head>
 <body>
 <div class="app">
-<aside class="sidebar">
-    <div class="brand"><span class="brand-mark">🛒</span><div><strong>{{ $namaToko }}</strong><small>Kasir</small></div></div>
-    <nav class="side-nav">
-        <a href="{{ route('kasir.index') }}"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1-6h16l1 6"/><path d="M3 9v10a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V9"/><path d="M9 21v-6h6v6"/></svg></span> Kasir </a>
-        <a class="active" href="{{ route('kasir.riwayat') }}"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></span> Riwayat</a>
-        <a href="{{ route('kasir.stok') }}"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="5" rx="1"/><path d="M4 9v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9"/><path d="M10 13h4"/></svg></span> Stok</a>
-    </nav>
-    <a class="logout-link" href="{{ route('auth.logout', ['role'=>'kasir']) }}"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg></span> Keluar</a>
-</aside>
+@include('kasir.partials.sidebar', ['active' => 'riwayat'])
 
 <main class="main" style="grid-template-columns: 1fr;">
-    <div class="panel">
+    <div>
+        <header class="riwayat-heading">
+            <div>
+                <h1>Riwayat Transaksi</h1>
+                <p>Daftar seluruh transaksi penjualan yang sudah kamu proses.</p>
+            </div>
+            <div style="display:flex;align-items:center;gap:14px;">
+                <a href="{{ route('kasir.riwayat.export') }}" style="display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:6px;background:#2e7d32;color:#fff;font-weight:700;font-size:14px;text-decoration:none;white-space:nowrap;">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 19h16"/></svg>
+                    Download Excel
+                </a>
+                <div class="tanggal">{{ now()->translatedFormat('l, d F Y') }}</div>
+            </div>
+        </header>
+
+        <div class="panel">
         <table class="tabel-riwayat">
             <thead>
                 <tr>
@@ -61,6 +73,7 @@
                 @endforelse
             </tbody>
         </table>
+        </div>
     </div>
 </main>
 </div>

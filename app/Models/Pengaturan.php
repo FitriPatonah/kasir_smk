@@ -12,7 +12,6 @@ class Pengaturan extends Model
         'nama_toko',
         'telepon',
         'alamat',
-        'persentase_pajak',
         'metode_cash',
         'metode_qris',
         'metode_transfer',
@@ -25,7 +24,6 @@ class Pengaturan extends Model
         'metode_cash' => 'boolean',
         'metode_qris' => 'boolean',
         'metode_transfer' => 'boolean',
-        'persentase_pajak' => 'integer',
     ];
 
     /**
