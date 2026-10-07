@@ -1,0 +1,33 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Transaksi;
+use Illuminate\Http\Request;
+
+class LaporanController extends Controller
+{
+    public function index(Request $request, string $role)
+    {
+        abort_unless(in_array($role, ['admin', 'kasir'], true), 404);
+
+        $data = $request->validate([
+            'jenis' => ['nullable', 'in:penjualan'],
+            'dari' => ['nullable', 'date'],
+            'sampai' => ['nullable', 'date', 'after_or_equal:dari'],
+        ]);
+
+        $jenis = $data['jenis'] ?? 'penjualan';
+        $dari = $data['dari'] ?? null;
+        $sampai = $data['sampai'] ?? null;
+
+        $penjualan = Transaksi::with('detail')
+            ->when($dari, fn ($query) => $query->whereDate('created_at', '>=', $dari))
+            ->when($sampai, fn ($query) => $query->whereDate('created_at', '<=', $sampai))
+            ->latest()
+            ->limit(100)
+            ->get();
+
+        return view('laporan.index', compact('role', 'jenis', 'dari', 'sampai', 'penjualan'));
+    }
+}

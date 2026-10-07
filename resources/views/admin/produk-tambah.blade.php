@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tambah Produk - {{{ $namaToko }}}</title>
+<style>
+:root{--blue:#1e3a5f;--ink:#222;--muted:#708099;--line:#e6ebf2;--page:#eef2f5}*{box-sizing:border-box}body{margin:0;background:var(--page);font-family:"Segoe UI",Arial,sans-serif;color:var(--ink)}.layout{display:flex;min-height:100vh}.sidebar{width:234px;flex:0 0 234px;background:var(--blue);color:#fff;display:flex;flex-direction:column;position:sticky;top:0;align-self:flex-start;height:100vh;overflow-y:auto}.brand{height:84px;padding:22px 24px;display:flex;gap:12px;align-items:center}.brand-mark{width:36px;height:36px;display:grid;place-items:center;border-radius:8px;background:rgba(255,255,255,.18);font-size:22px;}.brand strong{display:block;font-size:15px}.brand small{display:block;margin-top:3px;color:#d4e3ff;font-size:12px}.nav{padding:9px 12px}.nav a{display:flex;align-items:center;gap:13px;color:#dce9ff;text-decoration:none;padding:12px 16px;border-radius:9px;font-size:14px;margin:3px 0}.nav a:hover,.nav a.active{background:rgba(255,255,255,.2);color:#fff}.nav-icon{width:18px;text-align:center;font-size:19px}.nav-icon svg{width:18px;height:18px;display:block}.nav-arrow{margin-left:auto;font-size:11px;color:#9db3d1;transition:transform .15s ease}.nav-arrow.down{transform:rotate(90deg)}.nav-submenu{margin:2px 0 6px 33px;display:flex;flex-direction:column;gap:2px}.nav-submenu a{padding:8px 10px;font-size:13px;border-radius:7px;color:#c7d7ee;text-decoration:none;display:block}.nav-submenu a:hover{background:rgba(255,255,255,.12);color:#fff}.nav-submenu a.active{background:rgba(255,255,255,.2);color:#fff;font-weight:700}.sidebar-spacer{flex:1}.logout{border-top:1px solid rgba(255,255,255,.18);padding:14px 12px}.logout a{margin:0;color:#fff;text-decoration:none;display:flex;align-items:center;gap:13px;padding:12px 16px;border-radius:9px;font-size:14px}.logout a:hover{background:rgba(255,255,255,.15)}.main{flex:1;min-width:0;padding:25px 31px 38px}.heading{display:flex;justify-content:space-between;align-items:flex-start;margin:0 0 25px}.heading h1{font-size:27px;margin:0 0 4px}.heading p{margin:0;color:var(--muted);font-size:16px}.date{color:var(--muted);font-size:13px;padding-top:8px}.panel{background:#fff;border:1px solid var(--line);border-radius:13px;box-shadow:0 2px 5px rgba(23,36,58,.04);padding:25px;max-width:760px}.panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}.panel h2{font-size:16px;margin:0}.back{color:var(--blue);text-decoration:none;font-size:13px;font-weight:600}.alert{border-radius:8px;padding:12px 15px;margin-bottom:18px;font-size:14px}.error{background:#fff0f0;color:#a52828}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.field{display:flex;flex-direction:column;gap:6px}.field label{font-size:12px;color:var(--muted);font-weight:600}.field input{border:1px solid #d8e0eb;border-radius:7px;padding:11px;font:inherit;color:var(--ink);background:#fff}.field input:focus{outline:2px solid #d7e2ed;border-color:var(--blue)}.file-field{grid-column:1/-1}.actions{display:flex;justify-content:flex-end;gap:10px;grid-column:1/-1;margin-top:4px}.btn{border:0;border-radius:7px;padding:10px 15px;font:inherit;font-size:13px;cursor:pointer}.btn-secondary{background:#eef2f5;color:#1e3a5f;text-decoration:none}.btn-primary{background:var(--blue);color:#fff}@media(max-width:760px){.sidebar{width:62px;flex-basis:62px}.brand{padding:18px 17px}.brand div,.nav a span:not(.nav-icon),.logout a span{display:none}.nav a{justify-content:center;padding:12px 8px}.main{padding:20px 15px}.heading{display:block}.date{padding-top:12px}.panel{padding:18px}.form-grid{grid-template-columns:1fr}.file-field,.actions{grid-column:auto}}
+</style>
+</head>
+<body>
+<div class="layout">
+@include('admin.partials.sidebar', ['active' => 'produk'])
+<main class="main"><header class="heading"><div><h1>Tambah Produk</h1><p>Masukkan data produk baru dan tambahkan foto.</p></div><div class="date">{{ now()->translatedFormat('l, d F Y') }}</div></header>
+@if($errors->any()) <div class="alert error"><strong>Data belum disimpan:</strong> {{ $errors->first() }}</div> @endif
+<section class="panel"><div class="panel-head"><h2>Data Produk Baru</h2><a class="back" href="{{ route('admin.produk') }}">← Kembali ke Produk</a></div><form class="form-grid" method="POST" action="{{ route('admin.produk.store') }}" enctype="multipart/form-data">@csrf<div class="field"><label for="barcode">Barcode</label><input id="barcode" name="barcode" required maxlength="50" value="{{ old('barcode') }}" placeholder="Barcode"></div><div class="field"><label for="nama_produk">Nama Produk</label><input id="nama_produk" name="nama_produk" required maxlength="150" value="{{ old('nama_produk') }}" placeholder="Nama produk"></div><div class="field"><label for="harga">Harga (Rp)</label><input id="harga" type="number" name="harga" min="0" required value="{{ old('harga') }}" placeholder="0"></div><div class="field"><label for="stok">Stok</label><input id="stok" type="number" name="stok" min="0" required value="{{ old('stok') }}" placeholder="0"></div><div class="field"><label for="pajak">Pajak (%)</label><input id="pajak" type="number" name="pajak" min="0" max="100" value="{{ old('pajak', 0) }}" placeholder="0"></div><div class="field file-field"><label for="foto">Foto Produk</label><input id="foto" type="file" name="foto" accept="image/*"></div><div class="actions"><a class="btn btn-secondary" href="{{ route('admin.produk') }}">Batal</a><button class="btn btn-primary" type="submit">Simpan Produk</button></div></form></section>
+</main></div>
+<script>
+const kategoriProduk = @json($kategoriProduk);
+const formProduk = document.querySelector('form.form-grid');
+if (formProduk) {
+    const namaField = formProduk.querySelector('[name="nama_produk"]')?.closest('.field');
+    if (namaField) {
+        const field = document.createElement('div');
+        field.className = 'field';
+        field.innerHTML = '<label for="kategori">Kategori</label><select id="kategori" name="kategori" required><option value="">Pilih kategori</option>' + kategoriProduk.map(kategori => `<option value="${kategori}">${kategori}</option>`).join('') + '</select>';
+        namaField.after(field);
+        const kategoriLama = @json(old('kategori'));
+        if (kategoriLama) field.querySelector('select').value = kategoriLama;
+    }
+}
+</script>
+</body>
+</html>
